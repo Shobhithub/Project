@@ -9,6 +9,51 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import streamlit.components.v1 as components
 import gdown
 
+# --- Add custom background style ---
+st.markdown("""
+    <style>
+    .stApp {
+        background: linear-gradient(to right, #2c3e50, #3498db);
+        background-attachment: fixed;
+        color: white;
+    }
+
+    .block-container {
+        backdrop-filter: blur(6px);
+        background-color: rgba(255, 255, 255, 0.07);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin: 2rem;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    h1, h2, h3, h4 {
+        color: #ffe66d;
+    }
+
+    .css-1cpxqw2 {
+        color: #ffffff !important;
+    }
+
+    input, textarea {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        color: #fff !important;
+    }
+
+    button {
+        border-radius: 10px;
+        background: linear-gradient(to right, #ff758c, #ff7eb3);
+        color: white;
+        font-weight: bold;
+        transition: 0.3s ease-in-out;
+    }
+    button:hover {
+        transform: scale(1.05);
+        background: linear-gradient(to right, #f83600, #f9d423);
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # --- Load Dataset from Google Drive ---
 @st.cache_data
 def load_data():
@@ -61,13 +106,13 @@ def embed_youtube_video(video_id):
 
 # --- Streamlit UI ---
 st.set_page_config(page_title="🎵 Smart Music Player")
-st.title("Data Science Project")
-st.title("🎵 Smart Music Recommender")
+st.title("🎵 Smart Music Player")
 st.markdown("Search for a song and get smart YouTube music recommendations 🎧")
+st.text("Mentor: Himanshu Sardana Sir")
 
 # --- Song Input ---
 song_name = st.text_input("🎶 Enter a song name or singer name")
-st.text("Mentor: Himanshu Sardana Sir")
+
 if song_name:
     results = ytmusic.search(song_name, filter="songs")
     if results:
@@ -128,5 +173,5 @@ if song_name:
 
     except IndexError:
         st.error("⚠️ Song not found in dataset. Try a different title.")
- 
+
 
