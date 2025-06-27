@@ -60,7 +60,7 @@ def embed_youtube_video(video_id):
     )
 
 # --- Streamlit UI ---
-st.set_page_config(page_title="🎵 Smart Music Recommender", layout="wide")
+st.set_page_config(page_title="🎵 Smart Music Player")
 st.title("Data Science Project")
 st.title("🎵 Smart Music Recommender")
 st.markdown("Search for a song and get smart YouTube music recommendations 🎧")
