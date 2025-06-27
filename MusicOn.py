@@ -67,7 +67,7 @@ def embed_youtube_video(video_id):
     )
 
 # Streamlit UI
-st.title("🎥 YouTube Music Player (Embed Version)")
+st.title("🎥 Music Player")
 song_name = st.text_input("Enter song name")
 
 if song_name:
