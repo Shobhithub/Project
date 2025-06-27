@@ -61,12 +61,13 @@ def embed_youtube_video(video_id):
 
 # --- Streamlit UI ---
 st.set_page_config(page_title="🎵 Smart Music Recommender", layout="wide")
+st.title("Data Science Project")
 st.title("🎵 Smart Music Recommender")
 st.markdown("Search for a song and get smart YouTube music recommendations 🎧")
 
 # --- Song Input ---
-song_name = st.text_input("🎶 Enter a song name")
-
+song_name = st.text_input("🎶 Enter a song name or singer name")
+st.text("Mentor: Himanshu Sardana Sir")
 if song_name:
     results = ytmusic.search(song_name, filter="songs")
     if results:
