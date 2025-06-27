@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import random
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import NearestNeighbors
 from sklearn.cluster import KMeans
@@ -8,12 +7,14 @@ from ytmusicapi import YTMusic
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import streamlit.components.v1 as components
+
+# Load dataset
 import gdown
 
-# --- Load CSV from Google Drive ---
 @st.cache_data
 def load_data():
     file_id = "1hQXhG_HG5g1EkZAXex0Y0DQ4p4X0Qu7e"
+# replace with your actual ID
     url = f"https://drive.google.com/uc?id={file_id}"
     output = "SpotifyFeatures.csv"
     gdown.download(url, output, quiet=False)
@@ -22,23 +23,26 @@ def load_data():
 
 df = load_data()
 
-# --- Feature Processing ---
+
+# Feature selection
 features = df[
     ["danceability", "energy", "loudness", "speechiness", "acousticness",
      "instrumentalness", "liveness", "valence", "tempo"]
 ]
 
+# Scaling features
 scaler = StandardScaler()
 scaled_features = scaler.fit_transform(features)
 
-# --- Models ---
+# Nearest Neighbors model
 nn_model = NearestNeighbors(n_neighbors=6, algorithm="ball_tree")
 nn_model.fit(scaled_features)
 
+# KMeans clustering
 kmeans = KMeans(n_clusters=10, random_state=42)
 df["cluster"] = kmeans.fit_predict(scaled_features)
 
-# --- Spotify API Auth ---
+# Spotify auth (optional)
 sp = spotipy.Spotify(
     auth_manager=SpotifyClientCredentials(
         client_id="23bb7ccddcc34607ae9c923bd05320d6",
@@ -48,7 +52,7 @@ sp = spotipy.Spotify(
 
 ytmusic = YTMusic()
 
-# --- Helper: Embed YouTube Video ---
+# Function to embed YouTube video
 def embed_youtube_video(video_id):
     youtube_url = f"https://www.youtube.com/embed/{video_id}"
     components.html(
@@ -62,67 +66,42 @@ def embed_youtube_video(video_id):
         height=360,
     )
 
-# --- Streamlit UI ---
-st.title("🎧 Smart YouTube Music Recommender")
+# Streamlit UI
+st.title("Data Science Project")
+st.title("🎥 🎼 Music Player")
+song_name = st.text_input("Enter song name")
 
-# --- Genre & Mood Filters ---
-genres = sorted(df['genre'].dropna().unique())
-selected_genre = st.selectbox("🎼 Filter by Genre (Optional):", ["All"] + genres)
-
-mood = st.slider("🎭 Mood (Valence):", 0.0, 1.0, (0.0, 1.0))
-
-# --- Filter DataFrame ---
-filtered_df = df.copy()
-if selected_genre != "All":
-    filtered_df = filtered_df[filtered_df['genre'] == selected_genre]
-filtered_df = filtered_df[(filtered_df["valence"] >= mood[0]) & (filtered_df["valence"] <= mood[1])]
-
-# --- Song Selection with Suggestions ---
-filtered_song_list = sorted(filtered_df.apply(lambda x: f"{x['track_name']} - {x['artist_name']}", axis=1).unique().tolist())
-song_choice = st.selectbox("🔍 Search and select a song:", filtered_song_list)
-
-# --- Random Button ---
-if st.button("🎲 Surprise Me With a Random Song!"):
-    song_choice = random.choice(filtered_song_list)
-    st.success(f"Random pick: {song_choice}")
-
-# --- Extract track and artist ---
-try:
-    song_name, artist_name = song_choice.split(" - ", 1)
-except:
-    song_name = song_choice
-    artist_name = ""
-
-# --- Search and Embed ---
-if song_choice:
-    search_query = f"{song_name} {artist_name}"
-    results = ytmusic.search(search_query, filter="songs")
+if song_name:
+    results = ytmusic.search(song_name, filter="songs")
     if results:
         song = results[0]
+        title = song["title"]
+        artist = song["artists"][0]["name"]
         video_id = song["videoId"]
-        st.markdown(f"### ▶️ {song_name} - {artist_name}")
+
+        st.markdown(f"### 🎧 {title} - {artist}")
         embed_youtube_video(video_id)
     else:
-        st.warning("No YouTube Music result found.")
+        st.warning("No songs found.")
 
     try:
-        index = df[
-            (df["track_name"].str.lower() == song_name.lower()) &
-            (df["artist_name"].str.lower() == artist_name.lower())
-        ].index[0]
+        index = df[df["track_name"].str.lower() == song_name.lower()].index[0]
 
         st.subheader("🔁 Nearest Neighbors Recommendations")
         distances, indices = nn_model.kneighbors([scaled_features[index]])
         for i in indices[0][1:]:
             track = df.iloc[i]
             st.markdown(f"**{track['track_name']} - {track['artist_name']}**")
+
             try:
                 yt_results = ytmusic.search(f"{track['track_name']} {track['artist_name']}", filter="songs")
                 if yt_results:
                     video_id = yt_results[0]["videoId"]
                     embed_youtube_video(video_id)
-            except:
-                st.warning("Error embedding video.")
+                else:
+                    st.info("No YouTube result found.")
+            except Exception:
+                st.warning("🎧 Error embedding video.")
 
         st.subheader("🎯 KMeans Cluster Recommendations")
         cluster_id = df.loc[index, "cluster"]
@@ -134,10 +113,11 @@ if song_choice:
                 if yt_results:
                     video_id = yt_results[0]["videoId"]
                     embed_youtube_video(video_id)
-            except:
-                st.warning("Error embedding video.")
+                else:
+                    st.info("No YouTube result.")
+            except Exception:
+                st.warning("🎧 Error embedding video.")
 
     except IndexError:
-        st.error("⚠️ Song not found in dataset. Try another.")
-
+        st.error("Song not found in dataset. Try a different name.") 
 
