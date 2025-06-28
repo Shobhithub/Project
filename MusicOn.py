@@ -9,33 +9,52 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import streamlit.components.v1 as components
 import gdown
 
-# --- Add background with blur and animated music icon ---
+# --- Animated background with dynamic gradient and floating icons ---
 st.markdown("""
     <style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
     .stApp {
-        background: linear-gradient(to right, rgba(245, 245, 245, 0.5), rgba(220, 220, 220, 0.5));
-        backdrop-filter: blur(8px);
+        background: linear-gradient(-45deg, #e0f7fa, #fce4ec, #f3e5f5, #fff3e0);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        overflow: hidden;
     }
 
-    .floating-icon {
+    @keyframes gradientBG {
+        0% {background-position: 0% 50%;}
+        50% {background-position: 100% 50%;}
+        100% {background-position: 0% 50%;}
+    }
+
+    .note {
         position: fixed;
-        top: 10%;
-        left: 10%;
-        font-size: 60px;
-        color: #ff4b4b;
-        animation: float 3s ease-in-out infinite;
+        font-size: 30px;
         opacity: 0.2;
-        z-index: -1;
+        animation: floatNotes 10s linear infinite;
     }
 
-    @keyframes float {
-        0% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-20px) rotate(15deg); }
-        100% { transform: translateY(0px) rotate(0deg); }
+    @keyframes floatNotes {
+        0% {transform: translateY(100vh) translateX(0);}
+        100% {transform: translateY(-10vh) translateX(10vw);}
     }
+
+    .note1 { left: 5%; animation-delay: 0s; }
+    .note2 { left: 20%; animation-delay: 2s; }
+    .note3 { left: 35%; animation-delay: 4s; }
+    .note4 { left: 60%; animation-delay: 1s; }
+    .note5 { left: 80%; animation-delay: 3s; }
+
     </style>
 
-    <div class="floating-icon">🎵</div>
+    <div class="note note1">🎵</div>
+    <div class="note note2">🎶</div>
+    <div class="note note3">🎵</div>
+    <div class="note note4">🎶</div>
+    <div class="note note5">🎵</div>
 """, unsafe_allow_html=True)
 
 # --- Load Dataset from Google Drive ---
@@ -158,6 +177,7 @@ if song_name:
 
     except IndexError:
         st.error("⚠️ Song not found in dataset. Try a different title.")
+
 
 
 
