@@ -9,6 +9,35 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import streamlit.components.v1 as components
 import gdown
 
+# --- Add background with blur and animated music icon ---
+st.markdown("""
+    <style>
+    .stApp {
+        background: linear-gradient(to right, rgba(245, 245, 245, 0.5), rgba(220, 220, 220, 0.5));
+        backdrop-filter: blur(8px);
+    }
+
+    .floating-icon {
+        position: fixed;
+        top: 10%;
+        left: 10%;
+        font-size: 60px;
+        color: #ff4b4b;
+        animation: float 3s ease-in-out infinite;
+        opacity: 0.2;
+        z-index: -1;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(15deg); }
+        100% { transform: translateY(0px) rotate(0deg); }
+    }
+    </style>
+
+    <div class="floating-icon">🎵</div>
+""", unsafe_allow_html=True)
+
 # --- Load Dataset from Google Drive ---
 @st.cache_data
 def load_data():
@@ -45,7 +74,7 @@ sp = spotipy.Spotify(
     )
 )
 
-# --- Helper Function to Embed YouTube Video ---
+# --- Embed YouTube Video ---
 def embed_youtube_video(video_id):
     youtube_url = f"https://www.youtube.com/embed/{video_id}"
     components.html(
@@ -64,10 +93,11 @@ st.set_page_config(page_title="🎵 Smart Music Player")
 st.title("Data Science Project")
 st.title("🎵 Smart Music Player")
 st.markdown("Search for a song and get smart YouTube music recommendations 🎧")
+st.text("Mentor: Himanshu Sardana Sir")
 
 # --- Song Input ---
 song_name = st.text_input("🎶 Enter a song name or singer name")
-st.text("Mentor: Himanshu Sardana Sir")
+
 if song_name:
     results = ytmusic.search(song_name, filter="songs")
     if results:
@@ -91,7 +121,7 @@ if song_name:
         st.subheader("🧠 Similar by Audio Features")
         distances, indices = nn_model.kneighbors([scaled_features[index]])
         nn_count = 0
-        for i in indices[0][1:]:  # Skip the searched song itself
+        for i in indices[0][1:]:
             if nn_count >= 2:
                 break
             track = df.iloc[i]
@@ -113,7 +143,7 @@ if song_name:
         kmeans_count = 0
         for _, row in similar_songs.iterrows():
             if row["track_name"].lower() == song_name.lower():
-                continue  # skip if it's the same song
+                continue
             if kmeans_count >= 2:
                 break
             st.markdown(f"**{row['track_name']} - {row['artist_name']}**")
@@ -127,6 +157,7 @@ if song_name:
                 st.warning("🎧 Error embedding video.")
 
     except IndexError:
-        st.error("⚠️ Song not found in dataset. Try a different title.") 
+        st.error("⚠️ Song not found in dataset. Try a different title.")
+
 
 
